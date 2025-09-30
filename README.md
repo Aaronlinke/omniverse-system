@@ -24,7 +24,7 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 - **Rate-Limiting** und Nutzungsanalytics
 - **Proxy-Funktionalität** für alle Backend-Services
 - **Transaktionsmanagement** für Käufe und Upgrades
-- **Echte PayPal Business Integration** für Rechnungen und Auszahlungen
+- **Echte PayPal Business Integration** für Rechnungen und Auszahlungen (Authentifizierung ausstehend)
 
 ### 🛒 Marktplatz
 - **Content-Verkauf** für Welten, Module und Assets
@@ -80,9 +80,7 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 ## 🚀 Quick Start
 
 ### Voraussetzungen
-- Node.js 18+
-- Python 3.11+
-- .NET 8.0+
+- Docker und Docker Compose
 - Git
 
 ### Installation
@@ -93,54 +91,25 @@ git clone https://github.com/Aaronlinke/omniverse-system
 cd omniverse
 ```
 
-2. **Backend-Services starten (ohne Docker Compose)**
-
-   *Hinweis: Docker Compose hat in einigen Umgebungen Berechtigungsprobleme. Die Services werden direkt gestartet.*
+2. **Backend-Services mit Docker Compose starten**
 
    Stellen Sie sicher, dass alle Ports frei sind:
    ```bash
-   fuser -k 5002/tcp 5241/tcp 5006/tcp 5008/tcp || true
+   sudo fuser -k 5002/tcp 5241/tcp 5006/tcp 5008/tcp || true
    ```
 
-   **Weltgenerator (Python Flask)**
+   Starten Sie alle Dienste:
    ```bash
-   cd world-generator
-   pip install -r requirements.txt
-   nohup python3 world_generator.py > world_generator.log 2>&1 &
-   cd ..
+   docker-compose -f docker-compose.yml up --build -d
    ```
 
-   **Game Engine (C# ASP.NET Core)**
+   Initialisieren Sie die Datenbank (einmalig):
    ```bash
-   cd game-engine/GameEngineService
-   dotnet build
-   nohup dotnet run > game_engine.log 2>&1 &
-   cd ../..
+   docker exec omniverse-api-gateway-1 python -c "from api_gateway import init_db; init_db()"
    ```
 
-   **API Gateway (Python Flask)**
-   ```bash
-   cd api-gateway
-   pip install -r requirements.txt
-   nohup python3 api_gateway.py > api_gateway.log 2>&1 &
-   cd ..
-   ```
-
-   **PayPal Service (Python Flask)**
-   ```bash
-   cd paypal-service
-   pip install -r requirements.txt
-   nohup python3 paypal_service.py > paypal_service.log 2>&1 &
-   cd ..
-   ```
-
-3. **Frontend starten**
-```bash
-cd frontend/omniverse-frontend
-npm install
-npm run build
-npm run preview # Startet einen lokalen Server für die gebaute Anwendung
-```
+3. **Frontend starten (innerhalb des Docker-Containers)**
+   Das Frontend wird automatisch mit Docker Compose gestartet.
 
 4. **System testen**
 ```bash
@@ -148,7 +117,7 @@ python test_system.py
 ```
 
 ### Zugriff
-- **Frontend**: http://localhost:4173 (nach `npm run preview`)
+- **Frontend**: http://localhost:80 (über Nginx)
 - **API Gateway**: http://localhost:5006
 - **Weltgenerator**: http://localhost:5002
 - **Game Engine**: http://localhost:5241
@@ -263,11 +232,9 @@ curl -X POST http://localhost:5006/api/game/modules/FPS_ARENA/activate \
 ## 🚀 Deployment
 
 ### Vercel-Deployment (Frontend)
-```bash
-cd frontend/omniverse-frontend
-npm run build
-vercel --prod
-```
+- **Build-Befehl**: `npm run build`
+- **Ausgabeverzeichnis**: `dist`
+- **Installationsbefehl**: `npm install`
 
 ### Backend-Deployment
 - **Docker-Container** für einfache Skalierung
