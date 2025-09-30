@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # Frontend React Application
+  frontend:
+    build:
+      context: ./frontend/omniverse-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - api-gateway
+    networks:
+      - omniverse-network
+
+  # API Gateway Service
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5006:5006"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=sqlite:///omniverse.db
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - world-generator
+      - game-engine
+    networks:
+      - omniverse-network
+
+  # World Generator Service
+  world-generator:
+    build:
+      context: ./world-generator
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - omniverse-network
+
+  # Game Engine Service
+  game-engine:
+    build:
+      context: ./game-engine/GameEngineService
+      dockerfile: Dockerfile
+    ports:
+      - "5241:5241"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5241
+    networks:
+      - omniverse-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - api-gateway
+    networks:
+      - omniverse-network
+
+  # Redis for Caching (Optional)
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - omniverse-network
+
+  # PostgreSQL Database (Production Alternative)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=omniverse
+      - POSTGRES_USER=omniverse
+      - POSTGRES_PASSWORD=secure_password_here
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - omniverse-network
+
+networks:
+  omniverse-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  postgres-data:
