@@ -518,4 +518,20 @@ def health_check():
 if __name__ == '__main__':
     init_db()
     logging.basicConfig(level=logging.INFO)
+    
+    # PayPal-Integration hinzufügen
+    try:
+        from paypal_integration import add_paypal_routes
+        add_paypal_routes(app)
+        print("💳 PayPal Business Integration: Aktiviert")
+    except ImportError:
+        print("⚠️  PayPal Integration nicht verfügbar")
+    
+    print("🌐 OmniVerse API Gateway")
+    print("🔐 Authentifizierung: API-Key basiert")
+    print("💰 Monetarisierung: Aktiviert")
+    print("🛒 Marktplatz: Verfügbar")
+    print("🏦 PayPal Business: Integriert")
+    print("🚀 Gateway läuft auf http://0.0.0.0:5006")
+    
     app.run(host='0.0.0.0', port=5006, debug=True)

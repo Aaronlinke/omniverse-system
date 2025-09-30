@@ -38,6 +38,12 @@ import {
   ItemUploadDialog, 
   AnalyticsDashboard 
 } from './components/MarketplaceComponents.jsx'
+import {
+  PayPalSubscriptionUpgrade,
+  PayPalMarketplacePayout,
+  PayPalTransactions,
+  PayPalRevenueDashboard
+} from './components/PayPalComponents.jsx'
 
 // API-Konfiguration
 const API_CONFIG = {
@@ -627,11 +633,13 @@ function Marketplace() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="browse">Durchsuchen</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="upload">Verkaufen</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="paypal">PayPal</TabsTrigger>
+          <TabsTrigger value="revenue">Umsatz</TabsTrigger>
         </TabsList>
         
         <TabsContent value="browse" className="space-y-4">
@@ -668,6 +676,25 @@ function Marketplace() {
         
         <TabsContent value="analytics" className="space-y-4">
           <AnalyticsDashboard apiKey={apiKey} />
+        </TabsContent>
+        
+        <TabsContent value="paypal" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PayPalSubscriptionUpgrade 
+              apiKey={apiKey} 
+              currentTier="free"
+              onUpgradeSuccess={(data) => console.log('Upgrade successful:', data)}
+            />
+            <PayPalMarketplacePayout apiKey={apiKey} />
+          </div>
+          <PayPalTransactions apiKey={apiKey} />
+        </TabsContent>
+        
+        <TabsContent value="revenue" className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Umsatz-Dashboard</h3>
+            <PayPalRevenueDashboard apiKey={apiKey} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

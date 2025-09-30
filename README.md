@@ -24,6 +24,7 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 - **Rate-Limiting** und Nutzungsanalytics
 - **Proxy-Funktionalität** für alle Backend-Services
 - **Transaktionsmanagement** für Käufe und Upgrades
+- **Echte PayPal Business Integration** für Rechnungen und Auszahlungen
 
 ### 🛒 Marktplatz
 - **Content-Verkauf** für Welten, Module und Assets
@@ -88,32 +89,57 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 
 1. **Repository klonen**
 ```bash
-git clone <repository-url>
+git clone https://github.com/Aaronlinke/omniverse-system
 cd omniverse
 ```
 
-2. **Backend-Services starten**
-```bash
-# Weltgenerator
-cd world-generator
-pip install -r requirements.txt
-python world_generator.py &
+2. **Backend-Services starten (ohne Docker Compose)**
 
-# Game Engine
-cd ../game-engine/GameEngineService
-dotnet run &
+   *Hinweis: Docker Compose hat in einigen Umgebungen Berechtigungsprobleme. Die Services werden direkt gestartet.*
 
-# API Gateway
-cd ../../api-gateway
-pip install -r requirements.txt
-python api_gateway.py &
-```
+   Stellen Sie sicher, dass alle Ports frei sind:
+   ```bash
+   fuser -k 5002/tcp 5241/tcp 5006/tcp 5008/tcp || true
+   ```
+
+   **Weltgenerator (Python Flask)**
+   ```bash
+   cd world-generator
+   pip install -r requirements.txt
+   nohup python3 world_generator.py > world_generator.log 2>&1 &
+   cd ..
+   ```
+
+   **Game Engine (C# ASP.NET Core)**
+   ```bash
+   cd game-engine/GameEngineService
+   dotnet build
+   nohup dotnet run > game_engine.log 2>&1 &
+   cd ../..
+   ```
+
+   **API Gateway (Python Flask)**
+   ```bash
+   cd api-gateway
+   pip install -r requirements.txt
+   nohup python3 api_gateway.py > api_gateway.log 2>&1 &
+   cd ..
+   ```
+
+   **PayPal Service (Python Flask)**
+   ```bash
+   cd paypal-service
+   pip install -r requirements.txt
+   nohup python3 paypal_service.py > paypal_service.log 2>&1 &
+   cd ..
+   ```
 
 3. **Frontend starten**
 ```bash
 cd frontend/omniverse-frontend
 npm install
-npm run dev
+npm run build
+npm run preview # Startet einen lokalen Server für die gebaute Anwendung
 ```
 
 4. **System testen**
@@ -122,10 +148,11 @@ python test_system.py
 ```
 
 ### Zugriff
-- **Frontend**: http://localhost:5173
+- **Frontend**: http://localhost:4173 (nach `npm run preview`)
 - **API Gateway**: http://localhost:5006
 - **Weltgenerator**: http://localhost:5002
 - **Game Engine**: http://localhost:5241
+- **PayPal Service**: http://localhost:5008
 
 ## 💰 Monetarisierung
 

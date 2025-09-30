@@ -360,4 +360,4 @@ def health_check():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5002, debug=False, use_reloader=False) # Simplified for stability and background execution

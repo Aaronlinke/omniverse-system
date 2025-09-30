@@ -7,6 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY world_generator.py .
 
-EXPOSE 5001
+EXPOSE 5002
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "4", "world_generator:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5002", "--workers", "4", "world_generator:app"]

@@ -1,0 +1,25 @@
+💳 PayPal Business Integration: Aktiviert
+🌐 OmniVerse API Gateway
+🔐 Authentifizierung: API-Key basiert
+💰 Monetarisierung: Aktiviert
+🛒 Marktplatz: Verfügbar
+🏦 PayPal Business: Integriert
+🚀 Gateway läuft auf http://0.0.0.0:5006
+ * Serving Flask app 'api_gateway'
+ * Debug mode: on
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5006
+ * Running on http://169.254.0.21:5006
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 134-817-794
+INFO:werkzeug:127.0.0.1 - - [30/Sep/2025 12:39:13] "GET /api/health HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [30/Sep/2025 12:39:13] "POST /api/auth/register HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [30/Sep/2025 12:39:13] "GET /api/auth/profile HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [30/Sep/2025 12:39:13] "POST /api/world/init HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [30/Sep/2025 12:39:13] "POST /api/world/generate_chunk HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [30/Sep/2025 12:39:13] "GET /api/game/status HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [30/Sep/2025 12:39:13] "GET /api/billing/tiers HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [30/Sep/2025 12:39:13] "GET /api/marketplace/items HTTP/1.1" 200 -
