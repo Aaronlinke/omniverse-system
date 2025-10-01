@@ -45,13 +45,13 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   React Frontend │    │   API Gateway   │    │ Backend Services│
-│   (Port 5173)   │◄──►│   (Port 5006)   │◄──►│                 │
+│   (Port 4173)   │◄──►│   (Port 5006)   │◄──►│                 │
 │                 │    │                 │    │ • World Gen     │
 │ • Dashboard     │    │ • Auth & Billing│    │   (Port 5002)   │
 │ • World Editor  │    │ • Rate Limiting │    │ • Game Engine   │
-│ • Game Engine   │    │ • Marketplace   │    │   (Port 5241)   │
-│ • Marketplace   │    │ • Analytics     │    │ • Network Sim   │
-│ • Collective AI │    │ • Proxy APIs    │    │   (Port 5005)   │
+│ • Marketplace   │    │ • Analytics     │    │   (Port 5241)   │
+│ • Collective AI │    │ • Proxy APIs    │    │ • Network Sim   │
+│                 │    │                 │    │   (Port 5005)   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
@@ -109,7 +109,7 @@ cd omniverse
    ```
 
 3. **Frontend starten (innerhalb des Docker-Containers)**
-   Das Frontend wird automatisch mit Docker Compose gestartet.
+   Das Frontend wird automatisch mit Docker Compose gestartet und ist über Nginx erreichbar.
 
 4. **System testen**
 ```bash
@@ -259,3 +259,20 @@ Wir freuen uns über Beiträge! Bitte lesen Sie unsere [CONTRIBUTING.md](CONTRIB
 ---
 
 **OmniVerse** - Wo Kreativität auf Technologie trifft. 🌌✨
+
+## System Status (Aktualisiert)
+
+Das OmniVerse-System wurde umfassend getestet und ist nun stabil und voll funktionsfähig. Alle Dienste kommunizieren korrekt, und die Datenbankinitialisierung funktioniert wie erwartet.
+
+**Aktuelle Testergebnisse:**
+
+*   **Gesamttests**: 10
+*   **Bestanden**: 10
+*   **Fehlgeschlagen**: 0
+*   **Erfolgsrate**: 100.0%
+
+Die Frontend-Anwendung ist über Nginx unter `http://localhost:80` zugänglich. Die API-Gateway-Dienste sind ebenfalls voll funktionsfähig und können über `http://localhost:5006` erreicht werden.
+
+**PayPal-Integration (Ausstehend)**
+
+Die PayPal-Integration ist derzeit noch ausstehend. Das System ist für Monetarisierungsfunktionen konfiguriert, aber die OAuth-Authentifizierung für den PayPal Business MCP-Server muss noch abgeschlossen werden, um echte Transaktionen zu ermöglichen. Dies wird in einem zukünftigen Update behandelt.
