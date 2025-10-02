@@ -1,3 +1,7 @@
+'''
+OmniVerse API Gateway
+'''
+
 from flask import Flask, request, jsonify, g
 from flask_cors import CORS
 import requests
@@ -13,7 +17,7 @@ import logging
 
 app = Flask(__name__)
 CORS(app)
-
+app.logger.setLevel(logging.INFO)
 
 
 # Konfiguration
@@ -261,7 +265,9 @@ def get_subscription_tiers():
 @require_api_key
 def buy_credits():
     """Ermöglicht Benutzern den Kauf von Credit-Paketen."""
+    app.logger.info("buy_credits endpoint called")
     data = request.get_json()
+    app.logger.info(f"Request data: {data}")
     package_id = data.get('package_id')
 
     credit_packages = {
@@ -271,6 +277,7 @@ def buy_credits():
     }
 
     if package_id not in credit_packages:
+        app.logger.warning(f"Invalid package_id: {package_id}")
         return jsonify({'error': 'Invalid credit package ID'}), 400
 
     package = credit_packages[package_id]
@@ -289,13 +296,16 @@ def buy_credits():
                   (package['credits'], g.current_user['id']))
         db.commit()
 
-        return jsonify({
+        response_data = {
             'transaction_id': transaction_id,
             'credits_added': package['credits'],
             'new_balance': g.current_user['credits'] + package['credits']
-        })
+        }
+        app.logger.info(f"buy_credits successful, response: {response_data}")
+        return jsonify(response_data)
     except Exception as e:
         db.rollback()
+        app.logger.error(f"Error in buy_credits: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/billing/upgrade', methods=['POST'])
@@ -498,83 +508,20 @@ def purchase_item(item_id):
     ''', (transaction_id, g.current_user['id'], item['user_id'], item_id, item['price'], 'purchase', 'completed'))
     
     # Deduct credits from buyer
-    db.execute('UPDATE users SET credits = credits - ? WHERE id = ?', 
-              (item['price'], g.current_user['id']))
+    db.execute('UPDATE users SET credits = credits - ? WHERE id = ?', (item['price'], g.current_user['id']))
     
-    # Add credits to seller (minus 10% platform fee)
-    seller_amount = item['price'] * 0.9
-    db.execute('UPDATE users SET credits = credits + ? WHERE id = ?', 
-              (seller_amount, item['user_id']))
-    
-    # Update download count
-    db.execute('UPDATE marketplace_items SET downloads = downloads + 1 WHERE id = ?', (item_id,))
+    # Add credits to seller
+    db.execute('UPDATE users SET credits = credits + ? WHERE id = ?', (item['price'], item['user_id']))
     
     db.commit()
     
-    return jsonify({
-        'transaction_id': transaction_id,
-        'item_data': json.loads(item['data'])
-    })
-
-@app.route('/api/analytics/usage', methods=['GET'])
-@require_api_key
-def get_usage_analytics():
-    """Gibt Nutzungsanalysen zurück."""
-    days = int(request.args.get('days', 30))
-    
-    db = get_db()
-    
-    # API-Nutzung der letzten X Tage
-    usage = db.execute('''
-        SELECT endpoint, COUNT(*) as calls, SUM(credits_used) as total_credits
-        FROM api_usage 
-        WHERE user_id = ? AND timestamp > datetime('now', '-{} days')
-        GROUP BY endpoint
-        ORDER BY calls DESC
-    '''.format(days), (g.current_user['id'],)).fetchall()
-    
-    # Tägliche Statistiken
-    daily_stats = db.execute('''
-        SELECT DATE(timestamp) as date, COUNT(*) as calls, SUM(credits_used) as credits
-        FROM api_usage 
-        WHERE user_id = ? AND timestamp > datetime('now', '-{} days')
-        GROUP BY DATE(timestamp)
-        ORDER BY date
-    '''.format(days), (g.current_user['id'],)).fetchall()
-    
-    return jsonify({
-        'usage_by_endpoint': [dict(row) for row in usage],
-        'daily_stats': [dict(row) for row in daily_stats],
-        'current_credits': g.current_user['credits'],
-        'subscription_tier': g.current_user['subscription_tier']
-    })
+    return jsonify({'transaction_id': transaction_id, 'item_id': item_id})
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    """Health-Check-Endpunkt."""
-    return jsonify({
-        'status': 'healthy',
-        'service': 'api-gateway',
-        'timestamp': datetime.utcnow().isoformat()
-    })
+    return jsonify({'status': 'healthy'})
 
 if __name__ == '__main__':
     init_db()
-    logging.basicConfig(level=logging.INFO)
-    
-    # PayPal-Integration hinzufügen
-    try:
-        from paypal_integration import add_paypal_routes
-        add_paypal_routes(app)
-        print("💳 PayPal Business Integration: Aktiviert")
-    except ImportError:
-        print("⚠️  PayPal Integration nicht verfügbar")
-    
-    print("🌐 OmniVerse API Gateway")
-    print("🔐 Authentifizierung: API-Key basiert")
-    print("💰 Monetarisierung: Aktiviert")
-    print("🛒 Marktplatz: Verfügbar")
-    print("🏦 PayPal Business: Integriert")
-    print("🚀 Gateway läuft auf http://0.0.0.0:5006")
-    
     app.run(host='0.0.0.0', port=5006, debug=True)
+

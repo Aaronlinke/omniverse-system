@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
-"""
+'''
 OmniVerse System Integration Test
 Testet alle Komponenten des OmniVerse-Systems
-"""
+'''
 
 import requests
 import json
@@ -25,7 +24,7 @@ class OmniVerseSystemTest:
         self.test_results = []
         
     def log_test(self, test_name, success, message=""):
-        """Protokolliert Testergebnisse."""
+        "Protokolliert Testergebnisse."
         status = "✅ PASS" if success else "❌ FAIL"
         timestamp = datetime.now().strftime("%H:%M:%S")
         result = f"[{timestamp}] {status} {test_name}"
@@ -40,7 +39,7 @@ class OmniVerseSystemTest:
         })
         
     def test_service_health(self, service_name, url):
-        """Testet den Health-Check eines Services."""
+        "Testet den Health-Check eines Services."
         try:
             response = requests.get(f"{url}/health", timeout=5)
             if response.status_code == 200:
@@ -55,7 +54,7 @@ class OmniVerseSystemTest:
             return False
     
     def test_user_registration(self):
-        """Testet die Benutzerregistrierung."""
+        "Testet die Benutzerregistrierung."
         try:
             test_email = f"test_{int(time.time())}@omniverse.com"
             response = requests.post(
@@ -78,7 +77,7 @@ class OmniVerseSystemTest:
             return False
     
     def test_api_authentication(self):
-        """Testet die API-Authentifizierung."""
+        "Testet die API-Authentifizierung."
         if not self.api_key:
             self.log_test("API Authentication", False, "No API key available")
             return False
@@ -102,7 +101,7 @@ class OmniVerseSystemTest:
             return False
     
     def test_world_generation(self):
-        """Testet die Weltgenerierung über das API-Gateway."""
+        "Testet die Weltgenerierung über das API-Gateway."
         if not self.api_key:
             self.log_test("World Generation", False, "No API key available")
             return False
@@ -141,7 +140,7 @@ class OmniVerseSystemTest:
             return False
     
     def test_game_engine_control(self):
-        """Testet die Game-Engine-Steuerung."""
+        "Testet die Game-Engine-Steuerung."
         if not self.api_key:
             self.log_test("Game Engine Control", False, "No API key available")
             return False
@@ -167,7 +166,7 @@ class OmniVerseSystemTest:
             return False
     
     def test_entity_management(self):
-        """Testet die Entitätsverwaltung in der Game Engine."""
+        "Testet die Entitätsverwaltung in der Game Engine."
         if not self.api_key:
             self.log_test("Entity Management", False, "No API key available")
             return False
@@ -235,8 +234,63 @@ class OmniVerseSystemTest:
             self.log_test("Entity Management", False, str(e))
             return False
 
+    def test_buy_credits(self):
+        "Testet den Kauf von Credit-Paketen."
+        if not self.api_key:
+            self.log_test("Buy Credits", False, "No API key available")
+            return False
+
+        try:
+            # Get initial credits
+            profile_response = requests.get(
+                f"{SERVICES['api_gateway']}/auth/profile",
+                headers={
+                    "X-API-Key": self.api_key
+                },
+                timeout=5
+            )
+            initial_credits = profile_response.json().get("credits", 0)
+
+            # Buy a small credit package
+            buy_response = requests.post(
+                f"{SERVICES['api_gateway']}/billing/buy_credits",
+                headers={
+                    "X-API-Key": self.api_key,
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "package_id": "small"
+                },
+                timeout=5
+            )
+
+            if buy_response.status_code != 200 or buy_response.json().get("credits_added") != 500:
+                self.log_test("Buy Credits", False, f"HTTP {buy_response.status_code} - {buy_response.json().get('error', '')}")
+                return False
+
+            # Verify new credit balance
+            profile_response_after_purchase = requests.get(
+                f"{SERVICES['api_gateway']}/auth/profile",
+                headers={
+                    "X-API-Key": self.api_key
+                },
+                timeout=5
+            )
+            new_credits = profile_response_after_purchase.json().get("credits", 0)
+
+            if new_credits == initial_credits + 500:
+                self.log_test("Buy Credits", True, f"Credits purchased successfully. New balance: {new_credits}")
+                return True
+            else:
+                self.log_test("Buy Credits", False, f"Credit balance incorrect after purchase. Expected {initial_credits + 500}, got {new_credits}")
+                return False
+
+        except Exception as e:
+            self.log_test("Buy Credits", False, str(e))
+            return False
+
     def test_subscription_tiers(self):
-        """Testet die Subscription-Tier-API."""
+        "Testet die Subscription-Tier-API."
         try:
             response = requests.get(f"{SERVICES['api_gateway']}/billing/tiers", timeout=5)
             
@@ -253,7 +307,7 @@ class OmniVerseSystemTest:
             return False
     
     def test_marketplace_items(self):
-        """Testet die Marktplatz-API."""
+        "Testet die Marktplatz-API."
         try:
             response = requests.get(f"{SERVICES['api_gateway']}/marketplace/items", timeout=5)
             
@@ -270,7 +324,7 @@ class OmniVerseSystemTest:
             return False
     
     def test_frontend_accessibility(self):
-        """Testet die Frontend-Erreichbarkeit."""
+        "Testet die Frontend-Erreichbarkeit."
         try:
             response = requests.get(SERVICES['frontend'], timeout=5)
             
@@ -286,7 +340,7 @@ class OmniVerseSystemTest:
             return False
     
     def run_all_tests(self):
-        """Führt alle Tests aus."""
+        "Führt alle Tests aus."
         print("🚀 Starting OmniVerse System Integration Test")
         print("=" * 50)
         
@@ -308,6 +362,7 @@ class OmniVerseSystemTest:
             self.test_world_generation()
             self.test_game_engine_control()
             self.test_entity_management()
+            self.test_buy_credits()
         
         # Marketplace Tests
         print("\n🛒 Marketplace Tests:")
