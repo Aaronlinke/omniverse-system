@@ -143,6 +143,28 @@ class TerrainGeneratorComponent(IWorldComponent):
                 chunk.heightmap[y_rel, x_rel] = height
 
 
+class HumidityGeneratorComponent(IWorldComponent):
+    """
+    Generiert eine Feuchtigkeitskarte für einen Chunk mittels Rauschen.
+    """
+    def __init__(self, seed: int, scale: float = 0.02):
+        super().__init__(seed)
+        self.noise = OpenSimplex(seed=seed + 4) # Use a different seed for humidity
+        self.scale = scale
+
+    def generate_chunk_data(self, chunk: WorldChunk, world_grid: WorldGrid,
+                            influence_maps: dict[str, InfluenceMap]):
+        # Initialize humidity map if it doesn't exist
+        if not hasattr(chunk, 'humiditymap'):
+            chunk.humiditymap = np.zeros((chunk.size, chunk.size), dtype=np.float32)
+
+        for y_rel in range(chunk.size):
+            for x_rel in range(chunk.size):
+                world_x, world_y = chunk.get_world_coords(x_rel, y_rel)
+                humidity_value = (self.noise.noise2d(world_x * self.scale, world_y * self.scale) + 1) / 2.0
+                chunk.humiditymap[y_rel, x_rel] = humidity_value
+
+
 class BiomeGeneratorComponent(IWorldComponent):
     """
     Generiert Biome basierend auf Höhe und Rauschen.
@@ -166,16 +188,33 @@ class BiomeGeneratorComponent(IWorldComponent):
                 temp_noise = (self.noise.noise2d(world_x * self.scale, world_y * self.scale) + 1) / 2.0
 
                 biome = 'Plains'
+                humidity = chunk.humiditymap[y_rel, x_rel] if hasattr(chunk, 'humiditymap') else 0.5 # Default if no humidity map
+
                 if height < 20:
                     biome = 'Ocean'
+                elif height < 30:
+                    biome = 'Shallow Waters'
                 elif height < 50:
-                    biome = 'Beach'
-                elif temp_noise > 0.7 + biome_influence * 0.3:
-                    biome = 'Desert'
-                elif height > 70:
+                    if humidity > 0.7:
+                        biome = 'Swamp'
+                    else:
+                        biome = 'Beach'
+                elif height < 70:
+                    if humidity > 0.7 and temp_noise < 0.4:
+                        biome = 'Rainforest'
+                    elif humidity > 0.5 and temp_noise < 0.6:
+                        biome = 'Forest'
+                    elif humidity < 0.3 and temp_noise > 0.6:
+                        biome = 'Desert'
+                    else:
+                        biome = 'Plains'
+                elif height < 90:
+                    if humidity > 0.6:
+                        biome = 'Tundra'
+                    else:
+                        biome = 'Hills'
+                else:
                     biome = 'Mountains'
-                elif temp_noise < 0.3 - biome_influence * 0.3:
-                    biome = 'Forest'
 
                 chunk.biomemap[y_rel, x_rel] = biome
 
@@ -228,6 +267,7 @@ class WorldGenerator:
 
         # Standardkomponenten hinzufügen
         self.add_component(TerrainGeneratorComponent(seed=self.seed))
+        self.add_component(HumidityGeneratorComponent(seed=self.seed))
         self.add_component(BiomeGeneratorComponent(seed=self.seed))
         self.add_component(ObjectPlacementComponent(seed=self.seed))
 
