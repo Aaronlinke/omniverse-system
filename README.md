@@ -7,9 +7,11 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 ### 🌍 Weltgenerator
 - **Prozedurale Weltenerstellung** mit Perlin-Noise-Algorithmen
 - **Chunk-basierte Generierung** für skalierbare Welten
-- **Biom-System** mit verschiedenen Landschaftstypen
+- **Erweitertes Biom-System** mit Temperatur- und Feuchtigkeitskomponenten für vielfältigere Landschaften
 - **Höhenkarten und Objektplatzierung**
 - **Einflussbereich-Mapping** für dynamische Weltveränderungen
+- **Voreinstellungen** für schnelle Konfiguration (Gebirge, Ebenen, Inseln)
+- **Generierungs-Verlauf** zur Nachverfolgung und Wiederverwendung von Konfigurationen
 
 ### 🎮 Spiel-Engine
 - **Modulares System** mit austauschbaren Spielmodi
@@ -17,6 +19,8 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 - **Voxel Craft & Build** - Kreative Bauwelt
 - **Battle Royale Island** - Survival-Gameplay
 - **Core Hub** - Zentrale Verwaltung und Navigation
+- **Entitäten-Management** für Spieler, NPCs und Objekte mit CRUD-Operationen
+- **Echtzeit-Performance-Metriken** (FPS, Speicher, CPU-Auslastung)
 
 ### 🌐 API-Gateway & Monetarisierung
 - **API-Key-basierte Authentifizierung**
@@ -24,6 +28,7 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 - **Rate-Limiting** und Nutzungsanalytics
 - **Proxy-Funktionalität** für alle Backend-Services
 - **Transaktionsmanagement** für Käufe und Upgrades
+- **Kreditpakete kaufen** über einen dedizierten API-Endpunkt
 - **Echte PayPal Business Integration** für Rechnungen und Auszahlungen (Authentifizierung ausstehend)
 
 ### 🛒 Marktplatz
@@ -39,6 +44,8 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 - **Performance-Metriken** und Response-Time-Tracking
 - **Credit-Verbrauchsanalyse**
 - **Umsatz- und Transaktionsberichte**
+- **Erweiterte System-Performance-Anzeige** auf dem Dashboard
+- **Benachrichtigungssystem** für wichtige Systemereignisse
 
 ## 🏗️ Architektur
 
@@ -51,7 +58,7 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 │ • World Editor  │    │ • Rate Limiting │    │ • Game Engine   │
 │ • Marketplace   │    │ • Analytics     │    │   (Port 5241)   │
 │ • Collective AI │    │ • Proxy APIs    │    │ • Network Sim   │
-│                 │    │                 │    │   (Port 5005)   │
+│ • Analytics     │    │                 │    │   (Port 5005)   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
@@ -64,6 +71,8 @@ Ein voll funktionsfähiges, monetarisierbares Websystem für prozedurale Weltene
 - **Lucide Icons** für konsistente Iconographie
 - **React Router** für Navigation
 - **Vite** als Build-Tool
+- **Themen-Umschaltung** (Hell/Dunkel-Modus)
+- **Verbessertes Navigationsmenü** mit Benutzerprofil und Benachrichtigungen
 
 ### Backend Services
 - **Python Flask** (Weltgenerator)
@@ -153,6 +162,12 @@ curl -X POST http://localhost:5006/api/auth/register \
 # Profil abrufen
 curl -H "X-API-Key: YOUR_API_KEY" \
   http://localhost:5006/api/auth/profile
+
+# Credits kaufen
+curl -X POST http://localhost:5006/api/billing/buy_credits \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 1000}'
 ```
 
 ### Weltgenerierung
@@ -178,6 +193,22 @@ curl -H "X-API-Key: YOUR_API_KEY" \
 
 # Modul aktivieren
 curl -X POST http://localhost:5006/api/game/modules/FPS_ARENA/activate \
+  -H "X-API-Key: YOUR_API_KEY"
+
+# Entität erstellen
+curl -X POST http://localhost:5006/api/game/entities \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "new_entity", "type": "Player", "position": {"x": 10, "y": 10, "z": 10}, "health": 100}'
+
+# Entität aktualisieren
+curl -X PUT http://localhost:5006/api/game/entities/new_entity \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"health": 50}'
+
+# Entität löschen
+curl -X DELETE http://localhost:5006/api/game/entities/new_entity \
   -H "X-API-Key: YOUR_API_KEY"
 ```
 
@@ -266,8 +297,8 @@ Das OmniVerse-System wurde umfassend getestet und ist nun stabil und voll funkti
 
 **Aktuelle Testergebnisse:**
 
-*   **Gesamttests**: 10
-*   **Bestanden**: 10
+*   **Gesamttests**: 14
+*   **Bestanden**: 14
 *   **Fehlgeschlagen**: 0
 *   **Erfolgsrate**: 100.0%
 
@@ -276,3 +307,10 @@ Die Frontend-Anwendung ist über Nginx unter `http://localhost:80` zugänglich. 
 **PayPal-Integration (Ausstehend)**
 
 Die PayPal-Integration ist derzeit noch ausstehend. Das System ist für Monetarisierungsfunktionen konfiguriert, aber die OAuth-Authentifizierung für den PayPal Business MCP-Server muss noch abgeschlossen werden, um echte Transaktionen zu ermöglichen. Dies wird in einem zukünftigen Update behandelt.
+
+**Neueste Verbesserungen:**
+
+*   **Weltgenerator:** Erweiterte Generierungsparameter (Persistenz, Lacunarität), Biome-Visualisierung, Generierungs-Verlauf und Voreinstellungen.
+*   **Spiel-Engine:** Entitäten-Management (Erstellen, Aktualisieren, Löschen von Spielobjekten), Echtzeit-Performance-Metriken (FPS, Speicher, CPU).
+*   **API Gateway:** Neuer Endpunkt zum Kaufen von Credits.
+*   **Frontend:** Umfassendes UI/UX-Redesign mit Dark/Light-Modus, verbessertem Navigationsmenü, Benachrichtigungssystem, detaillierten Service-Status-Anzeigen und erweiterten Dashboards für Systemmetriken und Aktivitäten. Neue Analytics-Seite hinzugefügt.
