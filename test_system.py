@@ -15,7 +15,7 @@ SERVICES = {
     'world_generator': 'http://localhost:5002/api',
     'game_engine': 'http://localhost:5241/api/GameEngine',
     'api_gateway': 'http://localhost:5006/api',
-    'frontend': 'http://localhost:5173'
+    'frontend': 'http://localhost:4173'
 }
 
 class OmniVerseSystemTest:
@@ -166,6 +166,75 @@ class OmniVerseSystemTest:
             self.log_test("Game Engine Control", False, str(e))
             return False
     
+    def test_entity_management(self):
+        """Testet die Entitätsverwaltung in der Game Engine."""
+        if not self.api_key:
+            self.log_test("Entity Management", False, "No API key available")
+            return False
+
+        try:
+            # Test creating an entity
+            create_response = requests.post(
+                f"{SERVICES['api_gateway']}/game/entities",
+                headers={
+                    "X-API-Key": self.api_key,
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "action": "create",
+                    "entityId": "test_entity_1"
+                },
+                timeout=5
+            )
+
+            if create_response.status_code != 200 or create_response.json().get("status") != "success":
+                self.log_test("Entity Management (Create)", False, f"HTTP {create_response.status_code} - {create_response.json().get('message', '')}")
+                return False
+            self.log_test("Entity Management (Create)", True, "Entity test_entity_1 created")
+
+            # Test updating an entity
+            update_response = requests.post(
+                f"{SERVICES['api_gateway']}/game/entities",
+                headers={
+                    "X-API-Key": self.api_key,
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "action": "update",
+                    "entityId": "test_entity_1"
+                },
+                timeout=5
+            )
+
+            if update_response.status_code != 200 or update_response.json().get("status") != "success":
+                self.log_test("Entity Management (Update)", False, f"HTTP {update_response.status_code} - {update_response.json().get('message', '')}")
+                return False
+            self.log_test("Entity Management (Update)", True, "Entity test_entity_1 updated")
+
+            # Test deleting an entity
+            delete_response = requests.post(
+                f"{SERVICES['api_gateway']}/game/entities",
+                headers={
+                    "X-API-Key": self.api_key,
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "action": "delete",
+                    "entityId": "test_entity_1"
+                },
+                timeout=5
+            )
+
+            if delete_response.status_code != 200 or delete_response.json().get("status") != "success":
+                self.log_test("Entity Management (Delete)", False, f"HTTP {delete_response.status_code} - {delete_response.json().get('message', '')}")
+                return False
+            self.log_test("Entity Management (Delete)", True, "Entity test_entity_1 deleted")
+
+            return True
+        except Exception as e:
+            self.log_test("Entity Management", False, str(e))
+            return False
+
     def test_subscription_tiers(self):
         """Testet die Subscription-Tier-API."""
         try:
@@ -238,6 +307,7 @@ class OmniVerseSystemTest:
             self.test_api_authentication()
             self.test_world_generation()
             self.test_game_engine_control()
+            self.test_entity_management()
         
         # Marketplace Tests
         print("\n🛒 Marketplace Tests:")
@@ -270,3 +340,4 @@ if __name__ == "__main__":
     tester = OmniVerseSystemTest()
     success = tester.run_all_tests()
     sys.exit(0 if success else 1)
+

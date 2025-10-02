@@ -14,15 +14,17 @@ import logging
 app = Flask(__name__)
 CORS(app)
 
+
+
 # Konfiguration
 API_CONFIG = {
-    'world_generator': 'http://localhost:5002/api',
-    'game_engine': 'http://localhost:5241/api/GameEngine',
-    'network_sim': 'http://localhost:5005/api'
+    'world_generator': 'http://world-generator:5002/api',
+    'game_engine': 'http://game-engine:5241/api/GameEngine',
+    'network_sim': 'http://network-sim:5005/api'
 }
 
 # Datenbank-Setup
-DATABASE = 'omniverse.db'
+DATABASE = 'data/omniverse.db'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -254,6 +256,47 @@ def get_profile():
 def get_subscription_tiers():
     """Gibt verfügbare Subscription-Tiers zurück."""
     return jsonify(SUBSCRIPTION_TIERS)
+
+@app.route('/api/billing/buy_credits', methods=['POST'])
+@require_api_key
+def buy_credits():
+    """Ermöglicht Benutzern den Kauf von Credit-Paketen."""
+    data = request.get_json()
+    package_id = data.get('package_id')
+
+    credit_packages = {
+        'small': {'credits': 500, 'price': 4.99},
+        'medium': {'credits': 1200, 'price': 9.99},
+        'large': {'credits': 3000, 'price': 19.99}
+    }
+
+    if package_id not in credit_packages:
+        return jsonify({'error': 'Invalid credit package ID'}), 400
+
+    package = credit_packages[package_id]
+    transaction_id = str(uuid.uuid4())
+
+    db = get_db()
+    try:
+        # Erstelle Transaktion
+        db.execute('''
+            INSERT INTO transactions (id, buyer_id, amount, type, status)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (transaction_id, g.current_user['id'], package['price'], 'credit_purchase', 'completed'))
+
+        # Füge Credits zum Benutzerkonto hinzu
+        db.execute('UPDATE users SET credits = credits + ? WHERE id = ?',
+                  (package['credits'], g.current_user['id']))
+        db.commit()
+
+        return jsonify({
+            'transaction_id': transaction_id,
+            'credits_added': package['credits'],
+            'new_balance': g.current_user['credits'] + package['credits']
+        })
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/billing/upgrade', methods=['POST'])
 @require_api_key
